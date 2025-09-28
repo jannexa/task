@@ -17,14 +17,46 @@
                         <h3 class="text-center mb-4">✅ Task Manager</h3>
 
                         <!-- Add Task -->
-                        <form id="taskForm" class="d-flex mb-4">
-                            <input type="text" id="title" name="title" class="form-control me-2" placeholder="Enter new task" required>
+                        <form action="insert.php" method="POST" class="d-flex mb-4">
+                            <input type="text" name="title" class="form-control me-2" placeholder="Enter new task" required>
                             <button type="submit" class="btn btn-primary">Add</button>
                         </form>
 
                         <!-- Task List -->
-                        <div id="taskTable" class="table-responsive">
-                            <!-- Task list loads here -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Task</th>
+                                        <th>Created At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                $result = $conn->query("SELECT * FROM tasks ORDER BY id DESC");
+                                if ($result->num_rows > 0):
+                                    while($row = $result->fetch_assoc()):
+                                ?>
+                                    <tr>
+                                        <td><?= $row['id']; ?></td>
+                                        <td><?= htmlspecialchars($row['title']); ?></td>
+                                        <td><?= $row['created_at']; ?></td>
+                                        <td>
+                                            <a href="delete.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-danger">❌</a>
+                                        </td>
+                                    </tr>
+                                <?php 
+                                    endwhile;
+                                else: 
+                                ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No tasks yet</td>
+                                    </tr>
+                                <?php endif; ?>
+                                </tbody>
+                            </table>
                         </div>
 
                     </div>
@@ -33,44 +65,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-    // Load tasks initially
-    function loadTasks() {
-        fetch("fetch.php")
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("taskTable").innerHTML = data;
-            });
-    }
-
-    // Handle Add Task
-    document.getElementById("taskForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        let formData = new FormData(this);
-
-        fetch("insert.php", {
-            method: "POST",
-            body: formData
-        })
-        .then(() => {
-            this.reset();
-            loadTasks(); // refresh task list
-        });
-    });
-
-    // Handle Delete Task
-    function deleteTask(id) {
-        fetch("delete.php?id=" + id)
-            .then(() => loadTasks());
-    }
-
-    // Load tasks every 3 seconds (simulate real-time)
-    setInterval(loadTasks, 3000);
-
-    // Initial load
-    loadTasks();
-    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
